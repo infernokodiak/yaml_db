@@ -14,12 +14,22 @@ namespace :db do
       "#{Rails.root}/db#{dir}"
     end
 
+    def benchmark(label = nil)
+      puts label unless label.nil?
+      before = Time.now
+      yield
+      after = Time.now
+      puts "Took %.3fs" % (after - before)
+    end
+
     desc "Dump contents of database to db/data.extension (defaults to yaml)"
     task :dump => :environment do
       format_class = ENV['class'] || "YamlDb::Helper"
-      helper = format_class.constantize
-      SerializationHelper::Base.new(helper).dump db_dump_data_file helper.extension
-    end
+      benchmark("Dumping Tables ..") do
+        helper = format_class.constantize
+        SerializationHelper::Base.new(helper).dump db_dump_data_file helper.extension
+      end
+    end 
 
     desc "Dump contents of database to curr_dir_name/tablename.extension (defaults to yaml)"
     task :dump_dir => :environment do
